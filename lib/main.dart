@@ -1,87 +1,41 @@
+import 'package:mainpage/Location.dart';
+import 'package:mainpage/TimeZoneListView.dart';
+import 'package:mainpage/clock.dart';
+import 'package:mainpage/conainter.dart';
+import 'package:timezone/data/latest.dart' as tz;
 import 'package:flutter/material.dart';
-import 'package:flutter_colorpicker/flutter_colorpicker.dart';
-import 'package:mainpage/TheRows.dart';
-import 'Buttons.dart';
-import 'ChooseColor.dart';
-import 'DrawingBox.dart';
-import 'Slider.dart';
-import 'TheColums.dart';
+import 'package:provider/provider.dart';
+import 'Provider/ProviderData.dart';
 
 void main() {
-  runApp(DrwingGame());
+  tz.initializeTimeZones();
+  runApp(ChangeNotifierProvider(create: (_) => GameProvider(),
+      child: MaterialApp(home: Clock())));
 }
 
-class DrwingGame extends StatefulWidget {
-  Color theColor = Colors.red;
-  @override
-  State<DrwingGame> createState() => _DrwingGameState();
-}
-
-class _DrwingGameState extends State<DrwingGame> {
-  bool visibleSlider = true;
-  List<int> ButtonsNumList = [];
-
-  void nothing() {
-    setState(() {});
-    print("SMDDDDDDDDDDDDDD");
-  }
-
-  void resize() {
-    if (visibleSlider == false) {
-      visibleSlider = true;
-      setState(() {});
-    } else {
-      visibleSlider = false;
-      setState(() {});
-    }
-  }
-  void colorchoosed(Color color) {
-    widget.theColor = color;
-    print(widget.theColor);
-  }
-  void callme(BuildContext context) {
-    showDialog(
-        context: context,
-        builder: (BuildContext context) => AlertDialog(
-          content: Column(
-            children: [
-              SingleChildScrollView(
-                  child: ColorPicker(
-                      onColorChanged: colorchoosed, pickerColor: widget.theColor)),
-              ElevatedButton(
-                  onPressed: () {
-                    Navigator.of(context).pop("cancel");setState((){});
-                  },
-                  child: Text("APPLY"))
-            ],
-          ),
-        ));
-  }
+class Clock extends StatelessWidget {
   Widget build(BuildContext context) {
-    return MaterialApp(
-        home: Scaffold(
-      backgroundColor: Colors.purple[300],
-      appBar: AppBar(
-        title: Center(child: Text("helloo")),
+    final mediaQuery = MediaQuery.of(context);
+    context.read<GameProvider>().ChangeTimeZone("Africa/Casablanca");
+    context.read<GameProvider>().timeZone();
+    return Scaffold(
+      body: conainter(Column(
+          mainAxisAlignment: MainAxisAlignment.start,
+          children: [SizedBox(height: mediaQuery.size.height * 0.1),
+            TextButton(
+                onPressed: () =>
+                  Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) =>  TimeZoneListView())),
+
+                child: Row(mainAxisAlignment: MainAxisAlignment.center,children: [Icon(Icons.location_on),Text("Choose Location",style: TextStyle(fontSize: mediaQuery.size.height * 0.04),)],)),
+            SizedBox(height: mediaQuery.size.height * 0.06),
+            LocationText(),
+            SizedBox(height: mediaQuery.size.height * 0.15),
+              ClockTime()
+          ],
+    ),
       ),
-      body: Column(
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              CreateButtons(45, 70, 10, 10, resize, title: "Size"),
-              CreateButtons(45, 73, 10, 10, nothing, title: "Clear"),
-              CreateButtons(45, 120, 10, 10, nothing,
-                  title: "Rainbow Colors: Off"),
-              ColorChanger(callme,widget.theColor),
-            ],
-          ),
-          Visibility(
-              visible: visibleSlider,
-              child: StateSlider(ButtonsNumList, nothing)),
-          DrawingBox(TheColums(ButtonsNumList,widget.theColor)),
-        ],
-      ),
-    ));
+      );
   }
 }
